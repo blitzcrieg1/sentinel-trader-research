@@ -120,6 +120,14 @@ If the edge only existed in hindsight, the out-of-sample yield collapses to the
 baseline and the CI straddles zero. The no-look-ahead property is unit-tested. See
 [docs/METHODOLOGY.md](docs/METHODOLOGY.md) §5.5.
 
+And because capacity is the whole story for a thin-market edge, `capacity.py`
+turns the "~$100k ceiling" into a net-yield-vs-notional **curve** (square-root
+market impact + participation cap + a sensitivity band):
+
+```bash
+python -m sentinel.carry.capacity --symbol XMR_USDT -v
+```
+
 ## Deployment
 
 Linux + `systemd`. Units are in `deploy/` — `sentinel-carry.service` (the

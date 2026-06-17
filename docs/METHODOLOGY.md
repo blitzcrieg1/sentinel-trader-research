@@ -166,7 +166,7 @@ improvement, not a diversification illusion. Sizing is **risk-parity**
 | Worst drawdown | **< 1%** |
 | Round-trips (XMR, 400d) | ~6 (very low turnover) |
 | Market exposure | ~0 (delta-neutral) |
-| **Capacity ceiling** | **~$100k** (thin alt spot markets) |
+| **Capacity ceiling** | **~$100k order-of-magnitude** (per-name, liquidity-dependent — see §5.6) |
 
 A market-neutral ~15% with sub-1% drawdown is genuinely good. The catch is
 **capacity**: the spot markets on these names are thin, so the strategy tops out
@@ -209,6 +209,28 @@ The no-look-ahead property is **unit-tested** (`tests/test_carry_walkforward.py`
 a synthetic name that only turns positive *in the test window* is never selected,
 and the bootstrap CI is deterministic for a fixed seed. This is the difference
 between "it backtested well" and "it survived a procedure designed to break it."
+
+### 5.6 Capacity — a curve, not a number
+
+"Capacity ~$100k" is shorthand; the honest object is a **curve**.
+`sentinel/carry/capacity.py` builds net-yield-vs-notional for a name from its
+measured gross carry and current spot volume, using a standard *square-root*
+market-impact model (slippage ≈ k·√(notional / ADV)) plus a participation cap.
+It reports the notional where the edge stops being worth it — binding on
+whichever trips first, the **yield floor** or the **volume footprint** — plus a
+deterministic sensitivity band over the impact coefficient.
+
+```bash
+python -m sentinel.carry.capacity --symbol XMR_USDT -v
+```
+
+The model is assumption-driven (it has no order-book depth — only daily volume),
+so it's a sanity check, not a guarantee. And it's an honest one: under a
+conservative impact coefficient it can put practical capacity *well below* $100k
+for a thin name. That's the point — capacity is **per-name, liquidity-dependent,
+and smaller than the headline yield tempts you to believe**. The deepest limit
+(your own size compressing the funding you harvest) needs open-interest /
+elasticity data this tool doesn't yet collect, and is called out as out of scope.
 
 ---
 
