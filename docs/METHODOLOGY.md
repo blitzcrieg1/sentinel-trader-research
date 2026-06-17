@@ -61,6 +61,13 @@ Both negative. The LLM did not beat break-even. It produced confident,
 well-structured trade plans — and lost money net of costs, just like the
 mechanical signal. A plausible-sounding narrative is not an edge.
 
+To be explicit about rigor: these samples are **small** (n=39 and n=7), so on
+their own they're suggestive, not conclusive. But they don't stand alone — the
+*underlying* mechanical signal was already negative after costs (§1), so the LLM
+would have to add enough alpha to overcome both the signal and the costs, and it
+showed no sign of doing so. The honest claim is "no evidence of an edge," not a
+tight statistical bound.
+
 Tooling: `sentinel/backtest/llm_replay.py` (note the `--no-gates` and `--dump`
 flags) and `sentinel/backtest/sweep.py` (offline R:R-floor sweep over the dumped
 tape).
@@ -166,6 +173,42 @@ A market-neutral ~15% with sub-1% drawdown is genuinely good. The catch is
 around $100k before slippage starts eating the edge. This is a small-capital
 strategy, structurally. It cannot be scaled into an institutional product — which
 is, ironically, *why* the edge still exists.
+
+### 5.5 Guarding against survivorship bias — walk-forward validation
+
+The obvious objection to a consistency-screened basket is that it's chosen *with
+hindsight*: rank names by how one-sided their funding was over the whole history,
+then "backtest" on that same history — of course it looks good. That's
+survivorship/look-ahead bias, and it's the first thing a skeptic should attack.
+
+`sentinel/carry/walkforward.py` answers it directly by rolling a train→test
+window across the funding history:
+
+- the basket is selected using **only the training window** (past data);
+- realised funding is then measured on the **following test window** the
+  selector never saw (genuinely out-of-sample);
+- per-window OOS yields are **bootstrapped** into a 95% confidence interval and
+  compared against a **random-selection baseline** over the same windows.
+
+The logic is the falsifiable part. If the screen only worked in hindsight, the
+out-of-sample yield collapses toward the random baseline and the CI straddles
+zero. If the edge is real, the OOS mean stays positive, its CI excludes zero, and
+it beats random selection. Run it yourself (figures will reflect *current* data,
+not a fixed snapshot — the point is that the **method** survives, not that a
+specific number reproduces):
+
+```bash
+# scan the liquid universe:
+python -m sentinel.carry.walkforward --scan --train 600 --test 120 --top-n 6 -v
+
+# or a fixed set:
+python -m sentinel.carry.walkforward --symbols XMR_USDT,EVAA_USDT,VELVET_USDT --train 600 --test 120
+```
+
+The no-look-ahead property is **unit-tested** (`tests/test_carry_walkforward.py`):
+a synthetic name that only turns positive *in the test window* is never selected,
+and the bootstrap CI is deterministic for a fixed seed. This is the difference
+between "it backtested well" and "it survived a procedure designed to break it."
 
 ---
 

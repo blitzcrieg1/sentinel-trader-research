@@ -105,6 +105,21 @@ ruff check .
 mypy sentinel/
 ```
 
+## Validate the edge yourself (walk-forward, OOS)
+
+The sharpest objection to a consistency-screened basket is survivorship/look-ahead
+bias. `sentinel/carry/walkforward.py` confronts it: at each rebalance the basket
+is picked on **past-only** data, scored on the **next, unseen** window, then
+bootstrapped into a 95% CI and compared to a random-selection baseline.
+
+```bash
+python -m sentinel.carry.walkforward --scan --train 600 --test 120 --top-n 6 -v
+```
+
+If the edge only existed in hindsight, the out-of-sample yield collapses to the
+baseline and the CI straddles zero. The no-look-ahead property is unit-tested. See
+[docs/METHODOLOGY.md](docs/METHODOLOGY.md) §5.5.
+
 ## Deployment
 
 Linux + `systemd`. Units are in `deploy/` — `sentinel-carry.service` (the
