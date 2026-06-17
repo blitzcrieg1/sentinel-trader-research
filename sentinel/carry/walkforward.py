@@ -224,6 +224,79 @@ def bootstrap_ci(
     return point, lo, hi
 
 
+@dataclass(frozen=True, slots=True)
+class PermutationResult:
+    """Empirical significance of the consistency screen vs. random selection."""
+
+    real_mean_oos_yr: float       # OOS yield of the consistency-selected basket
+    null_mean_oos_yr: float       # average OOS yield under random selection
+    null_p95_oos_yr: float        # 95th percentile of the random-selection null
+    p_value: float                # P(random ≥ real); small = screen beats chance
+    n_permutations: int
+
+
+def _random_walk_mean(
+    aligned: dict[str, list[float]], length: int, *,
+    train: int, test: int, step: int, top_n: int,
+    rng: random.Random, sim_kwargs: dict[str, float],
+) -> float:
+    """One walk-forward pass that selects a *random* basket each window — the
+    null model for 'does the consistency screen beat chance selection?'."""
+    symbols = sorted(aligned)
+    oos: list[float] = []
+    t = 0
+    while t + train + test <= length:
+        test_slice = {s: r[t + train : t + train + test] for s, r in aligned.items()}
+        pool = list(symbols)
+        rng.shuffle(pool)
+        net, _ = measure_oos(pool[:top_n], test_slice, **sim_kwargs)
+        oos.append(net)
+        t += step
+    return statistics.fmean(oos) if oos else 0.0
+
+
+def permutation_test(
+    history: dict[str, list[float]], *,
+    n_permutations: int = 1_000, seed: int = 0,
+    train: int = 600, test: int = 120, step: int | None = None, top_n: int = 6,
+    min_consistency: float = 85.0, min_carry_yr: float = 8.0,
+    **sim_kwargs: float,
+) -> PermutationResult:
+    """Multiple-testing / selection-bias guard. Compares the real
+    consistency-selected OOS yield against a null built from many *random* basket
+    selections over the same universe and windows, returning an empirical p-value
+    P(random ≥ real). A small p means the screen genuinely beats chance.
+
+    Scope (be honest about it): this isolates the value of the *selection rule*
+    vs. chance from the *same* universe. It does NOT correct for survivorship in
+    the universe itself (only currently-listed names) — that needs point-in-time
+    listing data the scanner doesn't collect."""
+    aligned, length = _align(history)
+    step = step or test
+    real = walk_forward(
+        history, train=train, test=test, step=step, top_n=top_n,
+        min_consistency=min_consistency, min_carry_yr=min_carry_yr,
+        random_baseline=False, **sim_kwargs,
+    ).mean_oos_net_yr
+    rng = random.Random(seed)
+    null = [
+        _random_walk_mean(aligned, length, train=train, test=test, step=step,
+                          top_n=top_n, rng=rng, sim_kwargs=sim_kwargs)
+        for _ in range(n_permutations)
+    ]
+    ge = sum(1 for x in null if x >= real)
+    p_value = (1 + ge) / (n_permutations + 1)
+    null_sorted = sorted(null)
+    p95 = null_sorted[min(int(0.95 * n_permutations), n_permutations - 1)] if null else 0.0
+    return PermutationResult(
+        real_mean_oos_yr=real,
+        null_mean_oos_yr=statistics.fmean(null) if null else 0.0,
+        null_p95_oos_yr=p95,
+        p_value=p_value,
+        n_permutations=n_permutations,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Network + CLI (analytical tool — sync urllib via the scanner)
 # ---------------------------------------------------------------------------
@@ -274,6 +347,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--min-consistency", type=float, default=85.0)
     p.add_argument("--min-carry", type=float, default=8.0)
     p.add_argument("--bootstrap", type=int, default=10_000)
+    p.add_argument("--permutations", type=int, default=0,
+                   help="if >0, run the random-selection permutation test (selection-bias guard)")
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--json", help="optional path to dump the full result as JSON")
     p.add_argument("-v", "--verbose", action="store_true")
@@ -299,6 +374,19 @@ def main(argv: list[str] | None = None) -> int:
     )
     ci = bootstrap_ci(res.oos_returns, n_resamples=args.bootstrap, seed=args.seed)
     print(format_report(res, ci))
+
+    if args.permutations > 0:
+        perm = permutation_test(
+            history, n_permutations=args.permutations, train=args.train, test=args.test,
+            step=args.step, top_n=args.top_n, min_consistency=args.min_consistency,
+            min_carry_yr=args.min_carry, seed=args.seed,
+        )
+        print(
+            f"  permutation test ({perm.n_permutations} random baskets): "
+            f"real {perm.real_mean_oos_yr:.2f} vs null {perm.null_mean_oos_yr:.2f} %/yr, "
+            f"p={perm.p_value:.3f} "
+            f"({'beats chance' if perm.p_value < 0.05 else 'NOT significant'})"
+        )
 
     if args.json:
         payload = {

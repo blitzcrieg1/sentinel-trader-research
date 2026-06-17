@@ -232,19 +232,67 @@ and smaller than the headline yield tempts you to believe**. The deepest limit
 (your own size compressing the funding you harvest) needs open-interest /
 elasticity data this tool doesn't yet collect, and is called out as out of scope.
 
+### 5.7 Is the screen just noise-mining? A permutation test
+
+Scanning ~150–200 perps and keeping the most-consistent handful is a
+**multiple-testing** problem: with enough names, some look "consistent" by pure
+chance. Walk-forward already guards against this (chance-consistency doesn't
+persist into the next window), but `walkforward.permutation_test` makes it
+explicit. It compares the real consistency-selected OOS yield against a **null
+distribution** built from many *random* basket selections over the same universe
+and windows, and returns an empirical p-value `P(random ≥ real)`.
+
+```bash
+python -m sentinel.carry.walkforward --scan --train 600 --test 120 --permutations 1000 -v
+```
+
+On synthetic data it does the honest thing both ways: with a genuine edge it
+returns p ≈ 0.003 (the screen clearly beats chance); when every name is
+identical (no real selection advantage) it returns **p ≈ 1.0 and refuses to
+reject** — exactly what a test you can trust must do. Scope: this isolates the
+value of the *selection rule* vs. chance from the same universe; it does **not**
+correct for survivorship in the universe itself (only currently-listed names),
+which would need point-in-time listing data the scanner doesn't collect.
+
 ---
 
 ## 6. Honest limitations
 
+Most of these came from deliberately red-teaming the strategy (see §5.5/§5.7 for
+the parts that *are* defended in code; the rest are disclosed here because they
+need live data or operational discipline rather than a backtest tweak).
+
 - **Paper, not live-proven.** Everything here is backtest + paper simulation.
   Simulated fills are optimistic by nature. A real edge needs a long *live*
   track record, which this does not yet have.
-- **Capacity-limited.** ~$100k ceiling. Adding capital or crowding the trade
-  *reduces* the edge. It does not scale.
-- **Regime-dependent.** The structural funding premium can compress in different
-  market regimes. "100% consistent over 400 days" is history, not a guarantee.
-- **Execution risk is real on thin alts.** Halts, delistings, and gaps are
-  tail risks that paper trading doesn't capture, and leverage would amplify.
+- **Margin / liquidation mechanics are not simulated.** The backtest treats the
+  short perp as a clean hedge and never models maintenance margin, liquidation,
+  or auto-deleveraging (ADL). A short perp is liquidated by the price *rallying*
+  (which the long spot leg offsets) — **not** by negative funding, which is only
+  a cash bleed. So this is *not* an inherent edge-killer, but it is a real gap:
+  the mitigation is operational — run the perp leg **unleveraged / cross-margined
+  / same-venue** so a violent move can't liquidate it before the spot gain is
+  realised. The carry does not need leverage; using it reintroduces ruin risk.
+- **Capacity-limited.** ~$100k order-of-magnitude, per name (§5.6). Adding
+  capital or crowding the trade *reduces* the edge. It does not scale. The
+  capacity model also ignores **funding compression from your own size** (your
+  short pushes the funding you harvest toward zero) — the deepest limit, and one
+  it can't yet measure without open-interest data.
+- **Breadth may fail in a crisis.** The measured ~0.03 average pairwise funding
+  correlation is likely a calm-regime figure. In a market-wide deleveraging,
+  funding across alts can move together (correlations → 1), so the diversification
+  benefit shrinks exactly when you need it. Treat the breadth claim as a
+  benign-regime estimate, not a guarantee.
+- **Single-regime survivorship.** ~400 days ≈ one regime. "100% consistent" is
+  history, not a structural law — except where there's an independent structural
+  reason (e.g. XMR's short constraint), which is why the *reason* matters more
+  than the *rate*.
+- **Cost realism.** The sim uses flat fees and a static slippage assumption.
+  Real tiered maker/taker fees, settlement-timing edge cases, short-size/position
+  caps on thin perps, and spot-perp basis widening in stress all erode returns
+  and aren't fully captured.
+- **Execution risk on thin alts.** Halts, delistings, and gaps are tail risks
+  paper trading doesn't capture.
 
 ## 7. The transferable lessons
 

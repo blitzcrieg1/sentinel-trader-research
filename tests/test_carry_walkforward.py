@@ -11,10 +11,13 @@ All synthetic — no network.
 
 from __future__ import annotations
 
+import random
+
 from sentinel.carry.simulator import simulate_static_carry
 from sentinel.carry.walkforward import (
     bootstrap_ci,
     measure_oos,
+    permutation_test,
     select_basket,
     walk_forward,
 )
@@ -89,3 +92,23 @@ def test_bootstrap_ci_edge_cases():
     assert bootstrap_ci([7.5]) == (7.5, 7.5, 7.5)
     # constant sample → zero-width CI at the constant
     assert bootstrap_ci([5.0] * 10, n_resamples=500) == (5.0, 5.0, 5.0)
+
+
+def test_permutation_detects_a_real_screen_edge():
+    # genuine persistent payers + pure-noise names → the screen should beat
+    # random selection and the p-value should be significant.
+    hist = {f"PAY{i}": [0.0005] * 900 for i in range(4)}
+    rng = random.Random(0)
+    for i in range(8):
+        hist[f"NOISE{i}"] = [rng.choice([0.0006, -0.0006]) for _ in range(900)]
+    res = permutation_test(hist, n_permutations=200, train=600, test=120, top_n=4, seed=1)
+    assert res.real_mean_oos_yr > res.null_mean_oos_yr
+    assert res.p_value < 0.05
+
+
+def test_permutation_not_significant_when_no_real_edge():
+    # all coins identical → consistency selection has no advantage over random,
+    # so the test must FAIL to reject (this is what makes it honest).
+    hist = {f"S{i}": [0.0004] * 900 for i in range(8)}
+    res = permutation_test(hist, n_permutations=200, train=600, test=120, top_n=4, seed=1)
+    assert res.p_value > 0.05
