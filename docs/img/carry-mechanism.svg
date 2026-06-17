@@ -1,0 +1,37 @@
+<svg viewBox="0 0 900 380" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif">
+  <rect x="2" y="2" width="896" height="376" rx="12" fill="#ffffff" stroke="#d0d7de"/>
+
+  <text x="28" y="44" font-size="22" font-weight="700" fill="#1f2328">The edge that survived — delta-neutral funding carry</text>
+  <text x="28" y="70" font-size="14" fill="#57606a">Long spot + short perp at equal notional. Price risk cancels; you keep the funding.</text>
+
+  <!-- LONG SPOT box -->
+  <rect x="70" y="96" width="320" height="92" rx="10" fill="#ddf4ff" stroke="#0969da"/>
+  <text x="230" y="134" font-size="18" font-weight="700" fill="#0969da" text-anchor="middle">LONG  SPOT</text>
+  <text x="230" y="162" font-size="14" fill="#1f2328" text-anchor="middle">notional  N</text>
+
+  <!-- hedge link -->
+  <text x="450" y="136" font-size="12" fill="#57606a" text-anchor="middle">delta-neutral</text>
+  <line x1="392" y1="144" x2="508" y2="144" stroke="#8c959f" stroke-width="1.5"/>
+  <polygon points="392,144 402,139 402,149" fill="#8c959f"/>
+  <polygon points="508,144 498,139 498,149" fill="#8c959f"/>
+
+  <!-- SHORT PERP box -->
+  <rect x="510" y="96" width="320" height="92" rx="10" fill="#fbefff" stroke="#8250df"/>
+  <text x="670" y="134" font-size="18" font-weight="700" fill="#8250df" text-anchor="middle">SHORT  PERP</text>
+  <text x="670" y="162" font-size="14" fill="#1f2328" text-anchor="middle">notional  N</text>
+
+  <!-- funding inflow arrow from perp box down to green pill -->
+  <line x1="670" y1="188" x2="670" y2="222" stroke="#1a7f37" stroke-width="2"/>
+  <polygon points="670,232 663,220 677,220" fill="#1a7f37"/>
+  <rect x="470" y="232" width="400" height="38" rx="19" fill="#dafbe1" stroke="#1a7f37"/>
+  <text x="670" y="256" font-size="14.5" font-weight="700" fill="#1a7f37" text-anchor="middle">+ funding paid by longs every 8h</text>
+
+  <!-- cancellation note under spot box -->
+  <text x="230" y="246" font-size="13" fill="#57606a" text-anchor="middle">spot P&amp;L + perp P&amp;L  ≈  0</text>
+
+  <!-- result bar -->
+  <rect x="70" y="292" width="760" height="44" rx="10" fill="#f6f8fa" stroke="#d0d7de"/>
+  <text x="450" y="320" font-size="17" font-weight="700" fill="#1a7f37" text-anchor="middle">Net P&amp;L  ≈  accrued funding  −  costs</text>
+
+  <text x="28" y="362" font-size="12.5" fill="#57606a">Longs persistently pay shorts on assets that are hard to short — you harvest that premium, market-neutral.</text>
+</svg>

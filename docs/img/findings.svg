@@ -1,0 +1,49 @@
+<svg viewBox="0 0 900 440" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif">
+  <rect x="2" y="2" width="896" height="436" rx="12" fill="#ffffff" stroke="#d0d7de"/>
+
+  <text x="28" y="44" font-size="24" font-weight="700" fill="#1f2328">Does it have an edge?</text>
+  <text x="28" y="70" font-size="14.5" fill="#57606a">Five approaches, each tested net of real costs and out-of-sample. One survived.</text>
+
+  <!-- survivor highlight band -->
+  <rect x="8" y="320" width="884" height="58" fill="#f6fff9"/>
+
+  <!-- dividers -->
+  <line x1="8" y1="88" x2="892" y2="88" stroke="#eaeef2"/>
+  <line x1="8" y1="146" x2="892" y2="146" stroke="#eaeef2"/>
+  <line x1="8" y1="204" x2="892" y2="204" stroke="#eaeef2"/>
+  <line x1="8" y1="262" x2="892" y2="262" stroke="#eaeef2"/>
+  <line x1="8" y1="320" x2="892" y2="320" stroke="#d0e8d8"/>
+  <line x1="8" y1="378" x2="892" y2="378" stroke="#eaeef2"/>
+
+  <!-- row 1 -->
+  <text x="28" y="122" font-size="16" font-weight="600" fill="#1f2328">Directional signal (mechanical)</text>
+  <text x="392" y="122" font-size="14.5" fill="#57606a">+0.035R gross  →  -0.243R net of costs</text>
+  <rect x="716" y="103" width="156" height="28" rx="14" fill="#ffebe9" stroke="#cf222e"/>
+  <text x="794" y="122" font-size="13" font-weight="700" fill="#cf222e" text-anchor="middle">NO EDGE</text>
+
+  <!-- row 2 -->
+  <text x="28" y="180" font-size="16" font-weight="600" fill="#1f2328">LLM decisions (gated replay)</text>
+  <text x="392" y="180" font-size="14.5" fill="#57606a">-0.31R to -0.36R  ·  worse than break-even</text>
+  <rect x="716" y="161" width="156" height="28" rx="14" fill="#ffebe9" stroke="#cf222e"/>
+  <text x="794" y="180" font-size="13" font-weight="700" fill="#cf222e" text-anchor="middle">NO EDGE</text>
+
+  <!-- row 3 -->
+  <text x="28" y="238" font-size="16" font-weight="600" fill="#1f2328">Pairs / statistical arbitrage</text>
+  <text x="392" y="238" font-size="14.5" fill="#57606a">overfit  ·  reversed out-of-sample</text>
+  <rect x="716" y="219" width="156" height="28" rx="14" fill="#ffebe9" stroke="#cf222e"/>
+  <text x="794" y="238" font-size="13" font-weight="700" fill="#cf222e" text-anchor="middle">NO EDGE</text>
+
+  <!-- row 4 -->
+  <text x="28" y="296" font-size="16" font-weight="600" fill="#1f2328">Cross-exchange funding</text>
+  <text x="392" y="296" font-size="14.5" fill="#57606a">~0.4%/yr  ·  already arbitraged away</text>
+  <rect x="716" y="277" width="156" height="28" rx="14" fill="#ffebe9" stroke="#cf222e"/>
+  <text x="794" y="296" font-size="13" font-weight="700" fill="#cf222e" text-anchor="middle">NO EDGE</text>
+
+  <!-- row 5 — survivor -->
+  <text x="28" y="354" font-size="16" font-weight="700" fill="#1a7f37">Delta-neutral funding carry</text>
+  <text x="392" y="354" font-size="14.5" fill="#1a7f37">~15-20%/yr  ·  market-neutral, &lt;1% drawdown</text>
+  <rect x="716" y="335" width="156" height="28" rx="14" fill="#dafbe1" stroke="#1a7f37"/>
+  <text x="794" y="354" font-size="13" font-weight="700" fill="#1a7f37" text-anchor="middle">EDGE ✓</text>
+
+  <text x="28" y="412" font-size="12" fill="#8c959f">Full method in docs/METHODOLOGY.md  ·  figures from backtest + paper simulation, not a live track record.</text>
+</svg>

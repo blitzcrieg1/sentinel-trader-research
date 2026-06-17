@@ -20,6 +20,10 @@ but small** edge). The whole point is the methodology — see
 > the carry edge is backtested and paper-tested, **not** proven over a long live
 > track record.
 
+<p align="center">
+  <img src="docs/img/findings.svg" width="840" alt="Findings: directional, LLM, pairs, and cross-exchange approaches showed no edge after costs; only delta-neutral funding carry survived">
+</p>
+
 ---
 
 ## The one-paragraph summary
@@ -34,6 +38,10 @@ thing that held up under honest cost accounting was harvesting funding on
 perpetuals that are *structurally* hard to short, where longs persistently pay
 shorts. Held delta-neutral (long spot + short perp), that pays roughly
 **10–20%/yr, market-neutral**, with a hard **capacity ceiling around $100k**.
+
+<p align="center">
+  <img src="docs/img/carry-mechanism.svg" width="840" alt="Delta-neutral funding carry: long spot plus short perp at equal notional; price P&L cancels, net P&L is funding minus costs">
+</p>
 
 ## Architecture
 
