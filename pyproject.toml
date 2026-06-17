@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sentinel-trader"
+version = "0.1.0"
+description = "Crypto trading research: an LLM directional bot (no edge, proven) and a delta-neutral funding-carry strategy (real, capacity-limited edge)."
+requires-python = ">=3.12"
+license = {text = "MIT"}
+
+dependencies = [
+    # Exchange
+    "ccxt>=4.0,<5.0",
+    # Data & Indicators (pure pandas/numpy — no pandas-ta/numba/TA-Lib)
+    "pandas>=2.2,<3.0",
+    "numpy>=1.26,<3.0",
+    # AI
+    "google-genai>=0.3.0",
+    # Validation & Config
+    "pydantic>=2.7,<3.0",
+    "pydantic-settings>=2.3,<3.0",
+    # Telegram
+    "aiogram>=3.10,<4.0",
+    # Env
+    "python-dotenv>=1.0,<2.0",
+    # Async
+    "aiohttp>=3.9,<4.0",
+    "aiosqlite>=0.20,<1.0",
+    # Offline tooling (fine-tuning dataset generation)
+    "tqdm>=4.66,<5.0",
+    # aiohttp AsyncResolver backend (Google DNS bypass on broken VPN DNS)
+    "aiodns>=3.0,<4.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.4",
+    "mypy>=1.10",
+]
+
+[tool.setuptools.packages.find]
+include = ["sentinel*"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "SIM", "RUF"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

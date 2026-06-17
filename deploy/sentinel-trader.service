@@ -1,0 +1,51 @@
+# deploy/sentinel-trader.service
+# systemd unit for Sentinel Trader
+#
+# Install:
+#   sudo cp deploy/sentinel-trader.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now sentinel-trader
+
+[Unit]
+Description=Sentinel Trader — Autonomous Crypto Analysis Bot
+After=network-online.target
+Wants=network-online.target
+Documentation=file:///opt/sentinel-trader/specs/sentinel-trader-spec.md
+
+[Service]
+Type=simple
+User=sentinel
+Group=sentinel
+WorkingDirectory=/opt/sentinel-trader
+EnvironmentFile=/etc/sentinel-trader/.env
+ExecStart=/opt/sentinel-trader/.venv/bin/python -m sentinel.main
+Restart=always
+RestartSec=10
+WatchdogSec=300
+
+# Graceful shutdown: send SIGTERM, wait 30s for positions to reconcile
+TimeoutStopSec=30
+KillMode=mixed
+KillSignal=SIGTERM
+
+# Security hardening
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/opt/sentinel-trader/data
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+
+# Resource limits
+LimitNOFILE=4096
+MemoryMax=512M
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=sentinel-trader
+
+[Install]
+WantedBy=multi-user.target

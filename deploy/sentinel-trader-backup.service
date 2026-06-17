@@ -1,0 +1,15 @@
+# deploy/sentinel-trader-backup.service
+# Oneshot service triggered by sentinel-trader-backup.timer
+# Runs sqlite3 .backup and prunes backups older than 7 days
+
+[Unit]
+Description=Sentinel Trader SQLite Backup
+After=sentinel-trader.service
+
+[Service]
+Type=oneshot
+User=sentinel
+Group=sentinel
+ExecStartPre=/usr/bin/mkdir -p /opt/sentinel-trader/data/backups
+ExecStart=/bin/bash -c '/usr/bin/sqlite3 /opt/sentinel-trader/data/sentinel.db ".backup /opt/sentinel-trader/data/backups/sentinel-$(date +%%Y%%m%%d-%%H%%M).db"'
+ExecStartPost=/usr/bin/find /opt/sentinel-trader/data/backups -name "sentinel-*.db" -mtime +7 -delete

@@ -1,0 +1,19 @@
+# deploy/sentinel-trader-backup.timer
+# Hourly SQLite backup via .backup command
+#
+# Install:
+#   sudo cp deploy/sentinel-trader-backup.timer /etc/systemd/system/
+#   sudo cp deploy/sentinel-trader-backup.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now sentinel-trader-backup.timer
+
+[Unit]
+Description=Sentinel Trader SQLite Backup Timer
+
+[Timer]
+OnCalendar=*-*-* *:00:00
+Persistent=true
+RandomizedDelaySec=120
+
+[Install]
+WantedBy=timers.target
