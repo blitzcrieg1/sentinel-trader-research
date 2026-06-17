@@ -147,6 +147,37 @@ atomic writes and SQLite uses WAL, so a power loss won't corrupt state.
 - **It is not** financial advice or a turnkey money machine. See
   [DISCLAIMER.md](DISCLAIMER.md).
 
+## Related work — and how this differs
+
+Funding carry is **not new**, and this repo doesn't claim to have discovered it.
+It's one of the most replicated ideas in crypto, and the structural reason it
+works is well documented — a [BitMEX study](https://markets.financialcontent.com/chroniclejournal/article/gnwcq-2025-10-14-bitmex-study-finds-cryptocurrency-funding-rates-positive-92-of-the-time)
+found funding is positive ~92% of the time. There are many implementations:
+
+- **Execution / detection bots** — e.g.
+  [aoki-h-jp/funding-rate-arbitrage](https://github.com/aoki-h-jp/funding-rate-arbitrage),
+  [ARBOT](https://github.com/IrakliXYZ/ARBOT),
+  [HL-Delta](https://github.com/cgaspart/HL-Delta). These detect funding
+  opportunities and run the delta-neutral trade. They're useful — but they're
+  *execution engines*: none ship walk-forward validation, an out-of-sample
+  permutation/selection-bias guard, or a capacity curve.
+- **Academic** — e.g. a [leveraged BTC carry study](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5292305)
+  (~16%/yr, Sharpe 6.1). Rigorous, but single-asset and theoretical.
+- **Honest "AI bot" writeups** — e.g.
+  [Jiri Dolejs' LLM trading bot](https://medium.com/@kojott/i-built-an-ai-trading-bot-and-let-it-trade-for-9-days-heres-what-happened-6ceb69ad4d08),
+  which independently reaches the same conclusion about LLM signals that §2 does.
+
+What this repo adds is **not the strategy — it's the discipline around it**:
+
+1. A documented **disproof** of the strategies that *don't* survive (directional,
+   LLM, pairs, cross-exchange), so the carry isn't presented in a vacuum.
+2. A **validation layer** the execution bots skip — walk-forward + bootstrap, a
+   permutation test for selection bias, and a capacity curve, all runnable.
+3. **Honest limitations** ([METHODOLOGY §6](docs/METHODOLOGY.md)), including the
+   parts that are unproven or only operationally mitigable.
+
+The edge is the crowded part; the rigor and the candor are the point.
+
 ---
 
 *Built and tested in paper. The hardest and most valuable result here was
